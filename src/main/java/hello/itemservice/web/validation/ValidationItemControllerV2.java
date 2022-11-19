@@ -180,6 +180,11 @@ public class ValidationItemControllerV2 {
         //codes : required.item.itemName 를 사용해서 메시지 코드를 지정한다. 메시지 코드는 하나가 아니라
         //배열로 여러 값을 전달할 수 있는데, 순서대로 매칭해서 처음 매칭되는 메시지가 사용된다.
         //arguments : Object[]{1000, 1000000} 를 사용해서 코드의 {0} , {1} 로 치환할 값을 전달한다.
+        //field : 오류 필드명
+        //errorCode : 오류 코드(이 오류 코드는 메시지에 등록된 코드가 아니다.
+        //messageResolver를 위한 오류 코드이다.
+        //errorArgs : 오류 메시지에서 {0} 을 치환하기 위한 값
+        //defaultMessage : 오류 메시지를 찾을 수 없을 때 사용하는 기본 메시지
         if(!StringUtils.hasText(item.getItemName())) {
             bindingResult.rejectValue("itemName", "required");
         }
