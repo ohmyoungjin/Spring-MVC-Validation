@@ -26,5 +26,11 @@ public class MessageCodesResolverTest {
         for (String messageCode : messageCodes) {
             System.out.println("messageCode11 = " + messageCode);
         }
+        assertThat(messageCodes).containsExactly(
+                "required.item.itemName",
+                "required.itemName",
+                "required.java.lang.String",
+                "required"
+        );
     }
 }
