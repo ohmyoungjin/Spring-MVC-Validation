@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -185,8 +186,11 @@ public class ValidationItemControllerV2 {
         //messageResolver를 위한 오류 코드이다.
         //errorArgs : 오류 메시지에서 {0} 을 치환하기 위한 값
         //defaultMessage : 오류 메시지를 찾을 수 없을 때 사용하는 기본 메시지
+        //이렇게도 사용 가능하다
+        //ValidationUtils.rejectIfEmpty(bindingResult, "item", "required");
         if(!StringUtils.hasText(item.getItemName())) {
             bindingResult.rejectValue("itemName", "required");
+
         }
         if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
             bindingResult.rejectValue("price", "range", new Object[]{1000,1000000},null);
