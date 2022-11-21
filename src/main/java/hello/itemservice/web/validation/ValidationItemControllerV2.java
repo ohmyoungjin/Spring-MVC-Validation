@@ -234,11 +234,12 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-//    @PostMapping("/add")
-    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
-        //@Validated annotation을 기재하게 되면 InitBinder가 호출되면서 먼저 검증을 마친 후
-        //bindingResult 에 값을 담아두게 된다.
+//    @PostMapping("/add")
+    public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+        itemValidator.validate(item, bindingResult);
+
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
             return "validation/v2/addForm";
@@ -251,10 +252,10 @@ public class ValidationItemControllerV2 {
     }
 
     @PostMapping("/add")
-    public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult,
-                            RedirectAttributes redirectAttributes) {
-        itemValidator.validate(item, bindingResult);
+    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
+        //@Validated annotation을 기재하게 되면 InitBinder가 호출되면서 먼저 검증을 마친 후
+        //bindingResult 에 값을 담아두게 된다.
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
             return "validation/v2/addForm";
@@ -273,8 +274,19 @@ public class ValidationItemControllerV2 {
         return "validation/v2/editForm";
     }
 
+
+    //@Validated , @ModelAttribute , BindingResult의 순서를 맞춰줘야 한다.
     @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @ModelAttribute Item item) {
+    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+
+        //타입 오류가 났을 때는 bindingResult.hasErrors() 이 부분이 null이 아니기 때문에 탔다.
+        //@Validated 에서 내가 적용한 error message 는   @Validated @ModelAttribute 순서의 문제로 안탔었다.
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v2/editForm";
+        }
+        //성공 로직
+        redirectAttributes.addAttribute("status", true);
         itemRepository.update(itemId, item);
         return "redirect:/validation/v2/items/{itemId}";
     }
