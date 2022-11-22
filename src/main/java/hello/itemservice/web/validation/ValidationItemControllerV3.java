@@ -55,6 +55,14 @@ public class ValidationItemControllerV3 {
             log.info("errors={}", bindingResult);
             return "validation/v3/addForm";
         }
+
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin",new Object[]{10000, resultPrice}, null);
+            }
+        }
+
         //성공 로직
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());

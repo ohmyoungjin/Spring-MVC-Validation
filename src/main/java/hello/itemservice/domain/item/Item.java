@@ -2,12 +2,15 @@ package hello.itemservice.domain.item;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
+//사용하기도 번거롭고 , 제공하는 기능이 빈약하므로 이 기능을 사용하는 것은 추천하지 않는다.
+//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000", message = "총 합이 10000원을 넘어야 합니다.")
 public class Item {
 
     //@NotBlank : 빈값 + 공백만 있는 경우를 허용하지 않는다.
