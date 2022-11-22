@@ -51,16 +51,17 @@ public class ValidationItemControllerV3 {
         //@Validated annotation을 기재하게 되면 @Bean Validation이 자동으로 적용 된다.
         //정확히는 spring-boot-starter-validation 이 lib가 있어야지 적용이 된다.
         //@Validated는 spring frame work @Valid는 javax 자바 표준이다.
-        if (bindingResult.hasErrors()) {
-            log.info("errors={}", bindingResult);
-            return "validation/v3/addForm";
-        }
-
+        //특정 필드 예외가 아닌 전체 예외
         if (item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if (resultPrice < 10000) {
-                bindingResult.reject("totalPriceMin",new Object[]{10000, resultPrice}, null);
+                bindingResult.reject("totalPriceMin", new Object[]{10000,
+                        resultPrice}, null);
             }
+        }
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v3/editForm";
         }
 
         //성공 로직
@@ -82,8 +83,14 @@ public class ValidationItemControllerV3 {
     @PostMapping("/{itemId}/edit")
     public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
-        //타입 오류가 났을 때는 bindingResult.hasErrors() 이 부분이 null이 아니기 때문에 탔다.
-        //@Validated 에서 내가 적용한 error message 는   @Validated @ModelAttribute 순서의 문제로 안탔었다.
+        //특정 필드 예외가 아닌 전체 예외
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000,
+                        resultPrice}, null);
+            }
+        }
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
             return "validation/v3/editForm";
