@@ -4,6 +4,8 @@ import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
 import hello.itemservice.domain.item.SaveCheck;
 import hello.itemservice.domain.item.UpdateCheck;
+import hello.itemservice.web.validation.form.ItemSaveForm;
+import hello.itemservice.web.validation.form.ItemUpdateForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -43,44 +45,11 @@ public class ValidationItemControllerV4 {
         return "validation/v4/addForm";
     }
 
-//    @PostMapping("/add")
-    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-
-        //@Validated annotation을 기재하게 되면 @Bean Validation이 자동으로 적용 된다.
-        //정확히는 spring-boot-starter-validation 이 lib가 있어야지 적용이 된다.
-        //@Validated는 spring frame work @Valid는 javax 자바 표준이다.
-        //특정 필드 예외가 아닌 전체 예외
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if (resultPrice < 10000) {
-                bindingResult.reject("totalPriceMin", new Object[]{10000,
-                        resultPrice}, null);
-            }
-        }
-        if (bindingResult.hasErrors()) {
-            log.info("errors={}", bindingResult);
-            return "validation/v4/editForm";
-        }
-
-        //성공 로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v4/items/{itemId}";
-    }
-
     @PostMapping("/add")
-    public String addItem2(@Validated(SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String addItem(@Validated @ModelAttribute("item") ItemSaveForm form, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
-        //@Validated annotation을 기재하게 되면 @Bean Validation이 자동으로 적용 된다.
-        //정확히는 spring-boot-starter-validation 이 lib가 있어야지 적용이 된다.
-        //@Validated는 spring frame work @Valid는 javax 자바 표준이다.
-        //@Valid에는 Validation group 기능이 없다.
-        //@Validated(value="")로 적어줘야 하지만 생략 가능하다.
-        //사용할 클레스를 정해주면 된다.
-        //특정 필드 예외가 아닌 전체 예외
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
+        if (form.getPrice() != null && form.getQuantity() != null) {
+            int resultPrice = form.getPrice() * form.getQuantity();
             if (resultPrice < 10000) {
                 bindingResult.reject("totalPriceMin", new Object[]{10000,
                         resultPrice}, null);
@@ -90,6 +59,11 @@ public class ValidationItemControllerV4 {
             log.info("errors={}", bindingResult);
             return "validation/v4/addForm";
         }
+        //Item객체 만들어줘야 한다.
+        Item item = new Item();
+        item.setItemName(form.getItemName());
+        item.setPrice(form.getPrice());
+        item.setQuantity(form.getQuantity());
 
         //성공 로직
         Item savedItem = itemRepository.save(item);
@@ -106,34 +80,15 @@ public class ValidationItemControllerV4 {
     }
 
 
-    //@Validated , @ModelAttribute , BindingResult의 순서를 맞춰줘야 한다.
-//    @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-
-        //특정 필드 예외가 아닌 전체 예외
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if (resultPrice < 10000) {
-                bindingResult.reject("totalPriceMin", new Object[]{10000,
-                        resultPrice}, null);
-            }
-        }
-        if (bindingResult.hasErrors()) {
-            log.info("errors={}", bindingResult);
-            return "validation/v4/editForm";
-        }
-        //성공 로직
-        redirectAttributes.addAttribute("status", true);
-        itemRepository.update(itemId, item);
-        return "redirect:/validation/v4/items/{itemId}";
-    }
-
+    //@ModelAttribute("")안에 이름을 적어주지 않으면 자동으로
+    //class 이름(맨 앞 소문자 ex)itemUpdateForm이라는 객체 이름으로 View에 넘어간다)
+    //이를 방지해주기 위해("item")을 적어주었다.
     @PostMapping("/{itemId}/edit")
-    public String edit2(@PathVariable Long itemId, @Validated(UpdateCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute("item") ItemUpdateForm form, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         //특정 필드 예외가 아닌 전체 예외
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
+        if (form.getPrice() != null && form.getQuantity() != null) {
+            int resultPrice = form.getPrice() * form.getQuantity();
             if (resultPrice < 10000) {
                 bindingResult.reject("totalPriceMin", new Object[]{10000,
                         resultPrice}, null);
@@ -143,9 +98,18 @@ public class ValidationItemControllerV4 {
             log.info("errors={}", bindingResult);
             return "validation/v4/editForm";
         }
+
+        //item 객체 만들어주기
+        //update => item
+        Item itemParam = new Item();
+        itemParam.setId(form.getId());
+        itemParam.setItemName(form.getItemName());
+        itemParam.setPrice(form.getPrice());
+        itemParam.setQuantity(form.getQuantity());
+
         //성공 로직
         redirectAttributes.addAttribute("status", true);
-        itemRepository.update(itemId, item);
+        itemRepository.update(itemId, itemParam);
         return "redirect:/validation/v4/items/{itemId}";
     }
 
